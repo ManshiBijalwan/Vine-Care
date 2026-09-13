@@ -52,29 +52,29 @@ class DroneFlight {
 
   static List<DroneFlight> mockFlights = [
     DroneFlight(
-      id: 'f1', blockId: 'A1', blockName: 'Block A1', variety: 'Assyrtiko',
+      id: 'f1', blockId: '4', blockName: 'Block 4', variety: 'Assyrtiko',
       imageCount: 87, status: DroneFlightStatus.processed,
       date: DateTime.now().subtract(const Duration(hours: 2)),
-      ndvi: 0.72, altitudeMeters: 50,
-      s3Key: 'vine-care-bucket/flights/A1/2025-08-14',
+      ndvi: 0.55, altitudeMeters: 50,
+      s3Key: 'vine-care-bucket/flights/4/2026-08-08',
     ),
     DroneFlight(
-      id: 'f2', blockId: 'B3', blockName: 'Block B3', variety: 'Merlot',
+      id: 'f2', blockId: '3', blockName: 'Block 3', variety: 'Merlot',
       imageCount: 54, status: DroneFlightStatus.pending,
       date: DateTime.now().subtract(const Duration(days: 1)),
       altitudeMeters: 45,
     ),
     DroneFlight(
-      id: 'f3', blockId: 'A1', blockName: 'Block A1', variety: 'Gewurztraminer',
+      id: 'f3', blockId: '1', blockName: 'Block 1', variety: 'Cabernet Sauvignon',
       imageCount: 92, status: DroneFlightStatus.processed,
-      date: DateTime(2025, 8, 7), ndvi: 0.69, altitudeMeters: 50,
-      s3Key: 'vine-care-bucket/flights/A1/2025-08-07',
+      date: DateTime(2026, 8, 6), ndvi: 0.58, altitudeMeters: 50,
+      s3Key: 'vine-care-bucket/flights/1/2026-08-06',
     ),
     DroneFlight(
-      id: 'f4', blockId: 'A1', blockName: 'Block A1', variety: 'Gewurztraminer',
+      id: 'f4', blockId: '5', blockName: 'Block 5', variety: 'Gewurztraminer',
       imageCount: 74, status: DroneFlightStatus.processed,
-      date: DateTime(2025, 7, 30), ndvi: 0.65, altitudeMeters: 50,
-      s3Key: 'vine-care-bucket/flights/A1/2025-07-30',
+      date: DateTime(2026, 8, 4), ndvi: 0.57, altitudeMeters: 50,
+      s3Key: 'vine-care-bucket/flights/5/2026-08-04',
     ),
   ];
 }

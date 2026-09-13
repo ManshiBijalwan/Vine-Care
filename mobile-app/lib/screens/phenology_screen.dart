@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../core/app_colors.dart';
+import '../models/pest_risk.dart';
 
+/// Phenology tab — growth phases for the season, each one linked to the
+/// drone flight window that scouts it, per the agriculturalist's rules
+/// spreadsheet ("Rules for NDVI Estate Kokotos.xlsx"). The 6 flight
+/// windows use the same dates across every block, so this screen shows
+/// the estate-wide calendar; tapping a phase jumps to Flights to review
+/// that window's drone imagery.
 class PhenologyScreen extends StatelessWidget {
   const PhenologyScreen({super.key});
 
-  static const _stages = [
-    _Stage('💤', 'Dormancy', 'Complete', true, false),
-    _Stage('🌱', 'Budbreak', 'Complete', true, false),
-    _Stage('🌸', 'Flowering', 'Complete', true, false),
-    _Stage('🍇', 'Berry Dev.', 'In Progress', true, true),
-    _Stage('🟣', 'Veraison', 'Upcoming', false, false),
-    _Stage('✂️', 'Harvest', 'Upcoming', false, false),
-  ];
+  // Estate-wide flight calendar. The date ranges and growth stages are
+  // identical for every block in the spreadsheet — only the per-block
+  // disease/pest lists differ (shown on each block's own detail page).
+  // We use Block '1' (Chardonnay) here purely as the source of the
+  // shared calendar.
+  static List<FlightRiskWindow> get _windows =>
+      BlockPestRisk.forBlock('1')?.windows ?? const [];
+
+  static const _phaseEmoji = {
+    'Budburst to Early Shoot Growth': '🌱',
+    'Leaf Development': '🌿',
+    'Pre-Bloom to Flowering': '🌸',
+    'Fruit Set to Bunch Closure': '🍇',
+    'Veraison': '🟣',
+    'Veraison to Harvest': '✂️',
+  };
 
   @override
   Widget build(BuildContext context) {
+    final windows = _windows;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -41,7 +59,7 @@ class PhenologyScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    '2025 Growing Season',
+                    'Linked to flight windows · Rules for NDVI Estate Kokotos',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 11,
@@ -57,117 +75,63 @@ class PhenologyScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Timeline
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left stages (even indices)
-                    Expanded(
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < _stages.length; i += 2) ...[
-                            if (i ~/ 2 > 0) const SizedBox(height: 44),
-                            _StageCard(stage: _stages[i], alignRight: true),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    // Center timeline
-                    SizedBox(
-                      width: 36,
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < _stages.length; i++) ...[
-                            _StageNode(stage: _stages[i]),
-                            if (i < _stages.length - 1)
-                              Container(
-                                width: 2,
-                                height: 44,
-                                color: _stages[i].isComplete
-                                    ? AppColors.primary
-                                    : AppColors.divider,
-                              ),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    // Right stages (odd indices)
-                    Expanded(
-                      child: Column(
-                        children: [
-                          for (int i = 1; i < _stages.length; i += 2) ...[
-                            if ((i - 1) ~/ 2 > 0) const SizedBox(height: 44),
-                            const SizedBox(height: 36 + 44), // align to matching node
-                            _StageCard(stage: _stages[i], alignRight: false),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Detail card — current stage
+                // Dormancy — before the flight season begins, no flight
+                // window covers it.
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
+                  margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: const Row(
                     children: [
-                      const Text(
-                        '🍇 Berry Development',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Stage 4 of 6 · Started Jun 28',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Metrics row
-                      Row(
-                        children: [
-                          _MetricTile(label: 'NDVI Index', value: '0.72', delta: '▲ +3%', positive: true),
-                          _MetricTile(label: 'Canopy Coverage', value: '84%', delta: '▲ +1%', positive: true),
-                          _MetricTile(label: 'Estimated Yield', value: '4.2 t/ha', delta: '— Stable', positive: null),
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      const Text(
-                        'Next: Veraison expected ~Jul 18',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Phenology API · port 8002 · private-4',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 10,
-                          color: AppColors.textMuted,
+                      Text('💤', style: TextStyle(fontSize: 20)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Dormancy',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Before the flight season begins — no scouting flight',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                // One card per flight window / growth phase.
+                for (final w in windows) _PhaseCard(window: w, emoji: _phaseEmoji[w.growthStage] ?? '🍃'),
+
+                const SizedBox(height: 8),
+                const Text(
+                  'Disease/pest risks shown per phase are the estate-wide '
+                  'rules from the agriculturalist\'s spreadsheet. Open a block '
+                  'under Farms for that block\'s specific risk list.',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -177,136 +141,113 @@ class PhenologyScreen extends StatelessWidget {
   }
 }
 
-class _Stage {
+class _PhaseCard extends StatelessWidget {
+  final FlightRiskWindow window;
   final String emoji;
-  final String name;
-  final String status;
-  final bool isComplete;
-  final bool isActive;
-  const _Stage(this.emoji, this.name, this.status, this.isComplete, this.isActive);
-}
-
-class _StageNode extends StatelessWidget {
-  final _Stage stage;
-  const _StageNode({required this.stage});
+  const _PhaseCard({required this.window, required this.emoji});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 36,
-      height: 36,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: stage.isActive
-            ? AppColors.primary
-            : stage.isComplete
-                ? AppColors.primaryTint20
-                : AppColors.divider,
-        shape: BoxShape.circle,
-        border: stage.isActive
-            ? Border.all(color: AppColors.primaryLight, width: 2)
-            : null,
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Center(
-        child: Text(stage.emoji,
-            style: const TextStyle(fontSize: 16)),
-      ),
-    );
-  }
-}
-
-class _StageCard extends StatelessWidget {
-  final _Stage stage;
-  final bool alignRight;
-  const _StageCard({required this.stage, required this.alignRight});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      margin: alignRight
-          ? const EdgeInsets.only(right: 4)
-          : const EdgeInsets.only(left: 4),
-      decoration: BoxDecoration(
-        color: stage.isActive ? AppColors.primaryTint15 : AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: stage.isActive
-            ? Border.all(color: AppColors.primary, width: 1)
-            : null,
-      ),
-      child: Column(
-        crossAxisAlignment: alignRight
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
-        children: [
-          Text(
-            stage.name,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: stage.isActive
-                  ? AppColors.primaryLight
-                  : AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            stage.status,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 10,
-              color: stage.isActive
-                  ? AppColors.primaryLight
-                  : stage.isComplete
-                      ? AppColors.textSecondary
-                      : AppColors.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final String delta;
-  final bool? positive;
-  const _MetricTile({
-    required this.label,
-    required this.value,
-    required this.delta,
-    required this.positive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final deltaColor = positive == null
-        ? AppColors.textSecondary
-        : positive!
-            ? AppColors.primaryLight
-            : AppColors.error;
-
-    return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(
-                fontFamily: 'Inter', fontSize: 10, color: AppColors.textMuted)),
-          const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              )),
-          const SizedBox(height: 2),
-          Text(delta,
-              style: TextStyle(
-                fontFamily: 'Inter', fontSize: 10, color: deltaColor)),
+          Row(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      window.growthStage,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      window.flightLabel,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTint15,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  window.elStage,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryLight,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: window.risks
+                .map((r) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldTint,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        r,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 10,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => context.go('/flights'),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'View drone images for this window',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryLight,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_forward, size: 12, color: AppColors.primaryLight),
+              ],
+            ),
+          ),
         ],
       ),
     );

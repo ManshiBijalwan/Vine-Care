@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+
 import '../core/app_colors.dart';
 import '../models/flight.dart';
+import 'drone_icon.dart';
 import 'status_pill.dart';
 
 class FlightCard extends StatelessWidget {
   final DroneFlight flight;
   final VoidCallback? onTap;
 
-  const FlightCard({super.key, required this.flight, this.onTap});
+  const FlightCard({
+    super.key,
+    required this.flight,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
@@ -24,12 +33,15 @@ class FlightCard extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primaryTint15,
                 shape: BoxShape.circle,
               ),
               child: const Center(
-                child: Text('🚁', style: TextStyle(fontSize: 20)),
+                child: DroneIcon(
+                  size: 20,
+                  color: Colors.amber,
+                ),
               ),
             ),
             const SizedBox(width: 12),

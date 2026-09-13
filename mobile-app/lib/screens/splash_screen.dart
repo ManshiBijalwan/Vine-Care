@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
     final token = await ApiService.token;
     if (!mounted) return;
     if (token != null) {
-      context.go('/dashboard');
+      context.go('/estates');
     } else {
       context.go('/login');
     }

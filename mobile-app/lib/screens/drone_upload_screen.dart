@@ -1,7 +1,9 @@
+import '../widgets/drone_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../core/app_colors.dart';
 import '../models/block.dart';
+import '../models/pest_risk.dart';
 import '../services/api_service.dart';
 
 class DroneUploadScreen extends StatefulWidget {
@@ -11,14 +13,73 @@ class DroneUploadScreen extends StatefulWidget {
 }
 
 class _DroneUploadScreenState extends State<DroneUploadScreen> {
+  // The estate's 6 flight windows, straight from the agriculturalist's
+  // spreadsheet (same date ranges for every block — only the risk lists
+  // differ per block, which isn't needed here). Block '1' is used purely
+  // as the source of the shared calendar.
+  static List<FlightRiskWindow> get _windows =>
+      BlockPestRisk.forBlock('1')?.windows ?? const [];
+
+  // Representative start date for each window, in order — used so the
+  // upload API still gets a concrete YYYY-MM-DD even though the operator
+  // is now picking a flight window, not a calendar date. Matches the
+  // "1–20 April", "2–16 May" … ranges in the spreadsheet.
+  static List<DateTime> _windowStartDates(int year) => [
+        DateTime(year, 4, 1),
+        DateTime(year, 5, 2),
+        DateTime(year, 6, 3),
+        DateTime(year, 6, 4),
+        DateTime(year, 7, 5),
+        DateTime(year, 8, 6),
+      ];
+
   Block? _selectedBlock;
   double _altitude = 50;
-  DateTime _flightDate = DateTime.now();
+  FlightRiskWindow? _selectedWindow;
   final _notesCtrl = TextEditingController();
+  // Once the operator types their own notes, stop overwriting the field —
+  // the auto-summary is only a starting point.
+  bool _notesAutoFilled = true;
   List<PlatformFile> _selectedFiles = [];
   bool _uploading = false;
   double _uploadProgress = 0;
   String? _uploadResult;
+
+  // The date range part of a window's label, e.g. "1st Flight · 1–20
+  // April" -> "1–20 April".
+  String _dateRangeOf(FlightRiskWindow w) {
+    final parts = w.flightLabel.split('·');
+    return parts.length > 1 ? parts[1].trim() : w.flightLabel;
+  }
+
+  DateTime _resolvedFlightDate() {
+    final windows = _windows;
+    final idx = _selectedWindow == null ? -1 : windows.indexOf(_selectedWindow!);
+    final starts = _windowStartDates(DateTime.now().year);
+    if (idx >= 0 && idx < starts.length) return starts[idx];
+    return DateTime.now();
+  }
+
+  // Auto-generated flight summary, e.g. "1–20 April, 20 metres" —
+  // combines the selected flight window's date range and altitude.
+  String get _autoSummary {
+    if (_selectedWindow == null) {
+      return '${_altitude.toInt()} metres — select a flight window above';
+    }
+    return '${_dateRangeOf(_selectedWindow!)}, ${_altitude.toInt()} metres';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _notesCtrl.text = _autoSummary;
+  }
+
+  void _refreshAutoNote() {
+    if (_notesAutoFilled) {
+      _notesCtrl.text = _autoSummary;
+    }
+  }
 
   @override
   void dispose() {
@@ -38,17 +99,21 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
   }
 
   Future<void> _upload() async {
-    if (_selectedBlock == null || _selectedFiles.isEmpty) {
+    if (_selectedBlock == null || _selectedFiles.isEmpty || _selectedWindow == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Select a block and at least one image'),
+          content: Text('Select a block, a flight window, and at least one image'),
           backgroundColor: AppColors.error,
         ),
       );
       return;
     }
 
-    setState(() { _uploading = true; _uploadProgress = 0; _uploadResult = null; });
+    setState(() {
+      _uploading = true;
+      _uploadProgress = 0;
+      _uploadResult = null;
+    });
 
     try {
       final paths = _selectedFiles
@@ -56,12 +121,14 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
           .map((f) => f.path!)
           .toList();
 
+      final flightDate = _resolvedFlightDate();
+
       await ApiService.uploadFlightImages(
         blockId: _selectedBlock!.id,
         filePaths: paths,
         altitude: _altitude,
         flightDate:
-            '${_flightDate.year}-${_flightDate.month.toString().padLeft(2, '0')}-${_flightDate.day.toString().padLeft(2, '0')}',
+            '${flightDate.year}-${flightDate.month.toString().padLeft(2, '0')}-${flightDate.day.toString().padLeft(2, '0')}',
         notes: _notesCtrl.text.isNotEmpty ? _notesCtrl.text : null,
         onProgress: (sent, total) =>
             setState(() => _uploadProgress = sent / total),
@@ -74,15 +141,15 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
       setState(() => _uploadResult =
           '✅ ${_selectedFiles.length} images uploaded to vine-care-bucket · AWS S3 eu-central-1');
     } finally {
-      setState(() { _uploading = false; _uploadProgress = 1.0; });
+      setState(() {
+        _uploading = false;
+        _uploadProgress = 1.0;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateStr =
-        '${_flightDate.year}-${_flightDate.month.toString().padLeft(2, '0')}-${_flightDate.day.toString().padLeft(2, '0')}';
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -133,7 +200,10 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('🚁', style: TextStyle(fontSize: 40)),
+                        const DroneIcon(
+                          size: 40,
+                          color: Colors.amber,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           _selectedFiles.isEmpty
@@ -171,11 +241,11 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                 const SizedBox(height: 20),
 
                 // Block selector
-                _FieldLabel('Block ID'),
+                const _FieldLabel('Block ID'),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.inputField,
                     borderRadius: BorderRadius.circular(12),
@@ -215,7 +285,7 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                 const SizedBox(height: 16),
 
                 // Altitude
-                _FieldLabel('Flight Altitude (meters)'),
+                const _FieldLabel('Flight Altitude (meters)'),
                 const SizedBox(height: 6),
                 Container(
                   decoration: BoxDecoration(
@@ -233,7 +303,10 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                           divisions: 20,
                           activeColor: AppColors.primary,
                           inactiveColor: AppColors.divider,
-                          onChanged: (v) => setState(() => _altitude = v),
+                          onChanged: (v) => setState(() {
+                            _altitude = v;
+                            _refreshAutoNote();
+                          }),
                         ),
                       ),
                       Padding(
@@ -254,65 +327,77 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
 
                 const SizedBox(height: 16),
 
-                // Flight date
-                _FieldLabel('Flight Date'),
+                // Flight Window — picked from the agriculturalist's 6
+                // spreadsheet windows instead of a free calendar date, so
+                // the date shown always matches a real scouting window
+                // (e.g. "1–20 April") rather than today's date.
+                const _FieldLabel('Flight Window'),
                 const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _flightDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                      builder: (context, child) => Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.dark(
-                            primary: AppColors.primary,
-                            onPrimary: Colors.white,
-                            surface: AppColors.surface,
-                            onSurface: AppColors.textPrimary,
-                          ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.inputField,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<FlightRiskWindow>(
+                      isExpanded: true,
+                      value: _selectedWindow,
+                      dropdownColor: AppColors.surface,
+                      hint: const Text(
+                        'Select the flight window…',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          color: AppColors.textMuted,
                         ),
-                        child: child!,
                       ),
-                    );
-                    if (picked != null) setState(() => _flightDate = picked);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.inputField,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            dateStr,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 14,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const Icon(Icons.calendar_today,
-                            size: 16, color: AppColors.textMuted),
-                      ],
+                      items: _windows
+                          .map((w) => DropdownMenuItem(
+                                value: w,
+                                child: Text(
+                                  '${w.flightLabel} · ${w.elStage}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (w) => setState(() {
+                        _selectedWindow = w;
+                        _refreshAutoNote();
+                      }),
                     ),
                   ),
                 ),
+                if (_selectedWindow != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    _selectedWindow!.growthStage,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 11,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 16),
 
-                // Notes
-                _FieldLabel('Operator Notes'),
+                // Notes — pre-filled with an auto-generated summary
+                // ("1–20 April, 20 metres") from the flight window +
+                // altitude above; the operator can still edit or replace
+                // it freely.
+                const _FieldLabel('Operator Notes'),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _notesCtrl,
                   maxLines: 3,
+                  onChanged: (_) => _notesAutoFilled = false,
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
@@ -323,6 +408,16 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                     contentPadding: EdgeInsets.all(14),
                   ),
                 ),
+                const SizedBox(height: 4),
+                if (_notesAutoFilled)
+                  const Text(
+                    'Auto-filled from flight window + altitude — edit freely',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 10,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
 
                 // Selected images preview
                 if (_selectedFiles.isNotEmpty) ...[
@@ -341,9 +436,8 @@ class _DroneUploadScreenState extends State<DroneUploadScreen> {
                     height: 64,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      itemCount: _selectedFiles.length > 6
-                          ? 6
-                          : _selectedFiles.length,
+                      itemCount:
+                          _selectedFiles.length > 6 ? 6 : _selectedFiles.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, i) {
                         if (i == 5 && _selectedFiles.length > 6) {

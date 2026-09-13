@@ -11,6 +11,7 @@ class Block {
   final double? canopyCoverage;
   final int flightCount;
   final DateTime? lastFlight;
+  final String? knownIssues;
 
   const Block({
     required this.id,
@@ -25,6 +26,7 @@ class Block {
     this.canopyCoverage,
     required this.flightCount,
     this.lastFlight,
+    this.knownIssues,
   });
 
   factory Block.fromJson(Map<String, dynamic> json) => Block(
@@ -42,45 +44,112 @@ class Block {
         lastFlight: json['last_flight'] != null
             ? DateTime.tryParse(json['last_flight'].toString())
             : null,
+        knownIssues: json['known_issues']?.toString(),
       );
 
   String get lastFlightLabel {
     if (lastFlight == null) return 'No flights';
+
     final diff = DateTime.now().difference(lastFlight!);
+
     if (diff.inDays == 0) return 'Today';
     if (diff.inDays == 1) return 'Yesterday';
+
     return '${diff.inDays}d ago';
   }
 
-  // Mock data for UI development while API is being connected
+  // Mock data for UI development while API is being connected.
+  // Reflects the 5 real KOKOTOS ESTATE blocks identified in D1.1.
   static List<Block> mockBlocks = [
-    const Block(
-      id: 'A1', name: 'Block A1', variety: 'Gewurztraminer',
-      farm: 'North Farm', hectares: 2.4,
-      latitude: 37.9808, longitude: 23.7281,
-      phenologyStage: 'Berry Dev.', ndvi: 0.72,
-      canopyCoverage: 84, flightCount: 12,
+    Block(
+      id: '1',
+      name: 'Block 1',
+      variety: 'Cabernet Sauvignon',
+      farm: 'Kokotos Estate – Upper Section',
+      hectares: 2.3,
+
+      // Corrected real block coordinates
+      latitude: 38.1249632,
+      longitude: 23.8912986,
+
+      phenologyStage: 'Veraison',
+      ndvi: 0.58,
+      canopyCoverage: 66,
+      flightCount: 9,
+      lastFlight: DateTime(2026, 8, 6),
+      knownIssues: 'Nutrient & water stress, insect pressure',
     ),
-    const Block(
-      id: 'A2', name: 'Block A2', variety: 'Assyrtiko',
-      farm: 'North Farm', hectares: 1.8,
-      latitude: 37.9812, longitude: 23.7290,
-      phenologyStage: 'Veraison', ndvi: 0.68,
-      canopyCoverage: 79, flightCount: 9,
+    Block(
+      id: '2',
+      name: 'Block 2',
+      variety: 'Chardonnay',
+      farm: 'Kokotos Estate – Lower Section',
+      hectares: 1.9,
+
+      // Corrected real block coordinates
+      latitude: 38.1245507,
+      longitude: 23.8915312,
+
+      phenologyStage: 'Vine Dev.',
+      ndvi: 0.59,
+      canopyCoverage: 68,
+      flightCount: 8,
+      lastFlight: DateTime(2026, 8, 5),
+      knownIssues: 'Fungus pressure, nutrient deficiency',
     ),
-    const Block(
-      id: 'B1', name: 'Block B1', variety: 'Merlot',
-      farm: 'South Farm', hectares: 3.1,
-      latitude: 37.9795, longitude: 23.7265,
-      phenologyStage: 'Flowering', ndvi: 0.61,
-      canopyCoverage: 71, flightCount: 7,
+    Block(
+      id: '3',
+      name: 'Block 3',
+      variety: 'Merlot',
+      farm: 'Kokotos Estate – Mid Section',
+      hectares: 2.6,
+
+      // Corrected real block coordinates
+      latitude: 38.1230667,
+      longitude: 23.8923479,
+
+      phenologyStage: 'Vine Dev.',
+      ndvi: 0.63,
+      canopyCoverage: 72,
+      flightCount: 10,
+      lastFlight: DateTime(2026, 8, 7),
+      knownIssues: 'Water & nutrient deficiency',
     ),
-    const Block(
-      id: 'B3', name: 'Block B3', variety: 'Chardonnay',
-      farm: 'South Farm', hectares: 2.7,
-      latitude: 37.9788, longitude: 23.7258,
-      phenologyStage: 'Fruit Set', ndvi: 0.58,
-      canopyCoverage: 65, flightCount: 5,
+    Block(
+      id: '4',
+      name: 'Block 4',
+      variety: 'Assyrtiko',
+      farm: 'Kokotos Estate – Lower Section',
+      hectares: 3.1,
+
+      // Corrected real block coordinates
+      latitude: 38.1287965,
+      longitude: 23.9057000,
+
+      phenologyStage: 'Flowering',
+      ndvi: 0.55,
+      canopyCoverage: 60,
+      flightCount: 7,
+      lastFlight: DateTime(2026, 8, 8),
+      knownIssues: 'Frost damage, fungus infestation',
+    ),
+    Block(
+      id: '5',
+      name: 'Block 5',
+      variety: 'Gewurztraminer',
+      farm: 'Kokotos Estate – Lower Section',
+      hectares: 2.8,
+
+      // Corrected real block coordinates
+      latitude: 38.1298833,
+      longitude: 23.9054924,
+
+      phenologyStage: 'Vine Dev.',
+      ndvi: 0.57,
+      canopyCoverage: 63,
+      flightCount: 8,
+      lastFlight: DateTime(2026, 8, 4),
+      knownIssues: 'Frost damage, fungus infestation',
     ),
   ];
 }

@@ -13,7 +13,11 @@ class DashboardScreen extends StatelessWidget {
     final flights = DroneFlight.mockFlights.take(2).toList();
     final now = DateTime.now();
     final hour = now.hour;
-    final greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -80,9 +84,11 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         Positioned(
-                          top: 0, right: 0,
+                          top: 0,
+                          right: 0,
                           child: Container(
-                            width: 16, height: 16,
+                            width: 16,
+                            height: 16,
                             decoration: const BoxDecoration(
                               color: AppColors.error,
                               shape: BoxShape.circle,
@@ -114,7 +120,8 @@ class DashboardScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
                       color: AppColors.primaryTint20,
                       borderRadius: BorderRadius.circular(13),
@@ -149,11 +156,27 @@ class DashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
               child: Row(
                 children: [
-                  Expanded(child: KpiCard(emoji: '🟩', value: '12', label: 'Blocks', onTap: () => context.go('/farms'))),
+                  Expanded(
+                      child: KpiCard(
+                          emoji: '🟩',
+                          value: '5',
+                          label: 'Blocks',
+                          onTap: () => context.go('/farms'))),
                   const SizedBox(width: 8),
-                  Expanded(child: KpiCard(emoji: '🚁', value: '47', label: 'Flights', onTap: () => context.go('/flights'))),
+                  Expanded(
+                      child: KpiCard(
+                          emoji: '',
+                          isDrone: true,
+                          value: '47',
+                          label: 'Flights',
+                          onTap: () => context.go('/flights'))),
                   const SizedBox(width: 8),
-                  Expanded(child: KpiCard(emoji: '⚠️', value: '3', label: 'Alerts', onTap: () => context.go('/notifications'))),
+                  Expanded(
+                      child: KpiCard(
+                          emoji: '⚠️',
+                          value: '3',
+                          label: 'Alerts',
+                          onTap: () => context.go('/notifications'))),
                 ],
               ),
             ),
@@ -185,7 +208,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Current: Berry Development — Stage 4',
+                        'Current: Vine Development — Stage 4',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 12,
@@ -213,11 +236,12 @@ class DashboardScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Positioned(
-                            right: 0, top: -4,
+                          const Positioned(
+                            right: 0,
+                            top: -4,
                             child: Text(
                               '68%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -238,7 +262,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        'Gewurztraminer · Block A2',
+                        'Gewurztraminer · Block 5',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,

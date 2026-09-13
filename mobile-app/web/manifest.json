@@ -1,11 +1,11 @@
 {
-    "name": "vinecare",
-    "short_name": "vinecare",
+    "name": "VineCare",
+    "short_name": "VineCare",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0E1218",
+    "theme_color": "#318E52",
+    "description": "VineCare — Precision Viticulture Platform for KOKOTOS ESTATE",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

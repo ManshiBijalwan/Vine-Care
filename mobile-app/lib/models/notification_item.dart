@@ -45,22 +45,22 @@ class VineNotification {
   static List<VineNotification> mockNotifications = [
     VineNotification(
       id: 'n1', title: 'Low NDVI Detected', isRead: false,
-      body: 'Block B3 (Chardonnay) — NDVI dropped below 0.60 threshold',
+      body: 'Block 2 (Chardonnay) — NDVI dropped below 0.60 threshold',
       type: 'alert', timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     ),
     VineNotification(
-      id: 'n2', title: 'Heat Stress Risk', isRead: false,
-      body: 'Temperature >35°C forecast for next 3 days. Consider irrigation.',
+      id: 'n2', title: 'Frost Risk', isRead: false,
+      body: 'Overnight temperatures forecast near 0°C. Blocks 4 & 5 (lower section) at risk.',
       type: 'alert', timestamp: DateTime.now().subtract(const Duration(hours: 1)),
     ),
     VineNotification(
       id: 'n3', title: 'Phenology Update', isRead: false,
-      body: 'Veraison detected in Block A2 — Assyrtiko. Schedule harvest assessment.',
+      body: 'Veraison detected in Block 1 — Cabernet Sauvignon. Schedule harvest assessment.',
       type: 'phenology', timestamp: DateTime.now().subtract(const Duration(hours: 3)),
     ),
     VineNotification(
       id: 'n4', title: 'Flight Completed', isRead: true,
-      body: 'Block A1 drone flight processed. 87 images indexed in S3.',
+      body: 'Block 4 drone flight processed. 87 images indexed in S3.',
       type: 'flight', timestamp: DateTime.now().subtract(const Duration(days: 1)),
     ),
     VineNotification(

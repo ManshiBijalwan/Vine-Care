@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../models/notification_item.dart';
+import '../widgets/drone_icon.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -12,12 +13,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   String _tab = 'all';
 
   static const _tabs = ['all', 'alert', 'phenology', 'system'];
-  static const _tabLabels = {'all': 'All', 'alert': 'Alerts', 'phenology': 'Phenology', 'system': 'System'};
+  static const _tabLabels = {
+    'all': 'All',
+    'alert': 'Alerts',
+    'phenology': 'Phenology',
+    'system': 'System'
+  };
 
   List<VineNotification> get _filtered =>
       VineNotification.mockNotifications.where((n) {
         if (_tab == 'all') return true;
-        if (_tab == 'system') return n.type == 'system' || n.type == 'flight';
+        if (_tab == 'system') {
+          return n.type == 'system' || n.type == 'flight' || n.type == 'report';
+        }
         return n.type == _tab;
       }).toList();
 
@@ -104,9 +112,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
                             color: isSelected
                                 ? AppColors.textPrimary
                                 : AppColors.textMuted,
@@ -146,10 +153,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
-                          child: Text(
-                            notif.icon,
-                            style: const TextStyle(fontSize: 22),
-                          ),
+                          child: notif.type == 'flight'
+                              ? const DroneIcon(
+                                  size: 22,
+                                  color: Colors.amber,
+                                )
+                              : Text(
+                                  notif.icon,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
                         ),
                       ),
                       const SizedBox(width: 12),

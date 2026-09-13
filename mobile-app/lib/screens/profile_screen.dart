@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../core/app_colors.dart';
 import '../services/api_service.dart';
+import '../widgets/drone_icon.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -39,7 +41,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 16),
+
                 // Avatar
                 Container(
                   width: 104,
@@ -60,7 +64,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 12),
+
                 const Text(
                   'Eleni',
                   style: TextStyle(
@@ -70,10 +76,14 @@ class ProfileScreen extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
+
                 const SizedBox(height: 4),
+
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primaryTint15,
                     borderRadius: BorderRadius.circular(12),
@@ -88,7 +98,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 const Text(
                   'admin@kokotosestate.gr',
                   style: TextStyle(
@@ -102,10 +114,30 @@ class ProfileScreen extends StatelessWidget {
           ),
 
           // Info tiles
-          _InfoTile(emoji: '🏛️', label: 'Estate', value: 'KOKOTOS ESTATE'),
-          _InfoTile(emoji: '📍', label: 'Region', value: 'eu-central-1 (Frankfurt)'),
-          _InfoTile(emoji: '🌿', label: 'Blocks Managed', value: '12 active blocks'),
-          _InfoTile(emoji: '🚁', label: 'Total Flights', value: '47 recorded'),
+          const _InfoTile(
+            emoji: '🏛️',
+            label: 'Estate',
+            value: 'KOKOTOS ESTATE',
+          ),
+
+          const _InfoTile(
+            emoji: '📍',
+            label: 'Region',
+            value: 'eu-central-1 (Frankfurt)',
+          ),
+
+          const _InfoTile(
+            emoji: '🌿',
+            label: 'Blocks Managed',
+            value: '12 active blocks',
+          ),
+
+          // Flights uses the proper drone icon
+          const _InfoTile(
+            label: 'Total Flights',
+            value: '47 recorded',
+            isDrone: true,
+          ),
 
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
@@ -127,7 +159,7 @@ class ProfileScreen extends StatelessWidget {
             trailing: Switch(
               value: true,
               onChanged: (_) {},
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ),
 
@@ -136,8 +168,10 @@ class ProfileScreen extends StatelessWidget {
             emoji: '🌐',
             title: 'API Endpoint',
             subtitle: 'vine-care-frontend-alb',
-            trailing: const Icon(Icons.chevron_right,
-                color: AppColors.textMuted),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: AppColors.textMuted,
+            ),
             onTap: () {},
           ),
 
@@ -145,8 +179,10 @@ class ProfileScreen extends StatelessWidget {
           _SettingsTile(
             emoji: '🔒',
             title: 'Change Password',
-            trailing: const Icon(Icons.chevron_right,
-                color: AppColors.textMuted),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: AppColors.textMuted,
+            ),
             onTap: () {},
           ),
 
@@ -161,13 +197,20 @@ class ProfileScreen extends StatelessWidget {
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error, width: 1),
+                  side: const BorderSide(
+                    color: AppColors.error,
+                    width: 1,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () async {
                   await ApiService.clearToken();
-                  if (context.mounted) context.go('/login');
+
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
                 },
                 child: const Text(
                   'Sign Out',
@@ -189,41 +232,68 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _InfoTile extends StatelessWidget {
-  final String emoji;
+  final String? emoji;
   final String label;
   final String value;
-  const _InfoTile({required this.emoji, required this.label, required this.value});
+  final bool isDrone;
+
+  const _InfoTile({
+    this.emoji,
+    required this.label,
+    required this.value,
+    this.isDrone = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 2),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.divider, width: 0.5)),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.divider,
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          isDrone
+              ? const DroneIcon(
+                  size: 22,
+                  color: Colors.amber,
+                )
+              : Text(
+                  emoji ?? '',
+                  style: const TextStyle(fontSize: 22),
+                ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 11,
-                    color: AppColors.textMuted,
-                  )),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  )),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ],
           ),
         ],
@@ -238,6 +308,7 @@ class _SettingsTile extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
+
   const _SettingsTile({
     required this.emoji,
     required this.title,
@@ -252,33 +323,48 @@ class _SettingsTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 0, 12, 2),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         decoration: const BoxDecoration(
           color: AppColors.surface,
-          border: Border(bottom: BorderSide(color: AppColors.divider, width: 0.5)),
+          border: Border(
+            bottom: BorderSide(
+              color: AppColors.divider,
+              width: 0.5,
+            ),
+          ),
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 22)),
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 22),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
-                      )),
-                  if (subtitle != null)
-                    Text(subtitle!,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                        )),
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                 ],
               ),
             ),

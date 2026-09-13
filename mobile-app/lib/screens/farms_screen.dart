@@ -15,7 +15,12 @@ class _FarmsScreenState extends State<FarmsScreen> {
   String? _filterVariety;
 
   static const _varieties = [
-    null, 'Gewurztraminer', 'Assyrtiko', 'Merlot', 'Chardonnay'
+    null,
+    'Cabernet Sauvignon',
+    'Chardonnay',
+    'Merlot',
+    'Assyrtiko',
+    'Gewurztraminer'
   ];
 
   List<Block> get _filtered {
@@ -43,16 +48,17 @@ class _FarmsScreenState extends State<FarmsScreen> {
               top: MediaQuery.of(context).padding.top,
               bottom: 12,
             ),
-            child: Column(
+            child: const Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       Expanded(
                         child: Center(
                           child: Column(
-                            children: const [
+                            children: [
                               Text(
                                 'Farms & Blocks',
                                 style: TextStyle(
@@ -81,6 +87,44 @@ class _FarmsScreenState extends State<FarmsScreen> {
             ),
           ),
 
+          // Vineyard overview map — the full picture of all blocks,
+          // shown right on this screen. Tap to zoom full-screen.
+          GestureDetector(
+            onTap: () => context.push('/map'),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              height: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/vineyard_overview_map.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Tap to zoom',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // Search bar
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
@@ -91,15 +135,15 @@ class _FarmsScreenState extends State<FarmsScreen> {
                 fontSize: 14,
                 color: AppColors.textPrimary,
               ),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: '🔍 Search blocks, varieties…',
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
                   color: AppColors.textMuted,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -119,12 +163,10 @@ class _FarmsScreenState extends State<FarmsScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _filterVariety = v),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surface,
+                      color: isSelected ? AppColors.primary : AppColors.surface,
                       borderRadius: BorderRadius.circular(15),
                       border: isSelected
                           ? null
@@ -136,9 +178,8 @@ class _FarmsScreenState extends State<FarmsScreen> {
                         fontFamily: 'Inter',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : AppColors.textSecondary,
+                        color:
+                            isSelected ? Colors.white : AppColors.textSecondary,
                       ),
                     ),
                   ),

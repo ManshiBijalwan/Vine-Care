@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+
 import '../core/app_colors.dart';
+import 'drone_icon.dart';
 
 class KpiCard extends StatelessWidget {
   final String emoji;
   final String value;
   final String label;
   final VoidCallback? onTap;
+  final bool isDrone;
 
   const KpiCard({
     super.key,
@@ -13,6 +16,7 @@ class KpiCard extends StatelessWidget {
     required this.value,
     required this.label,
     this.onTap,
+    this.isDrone = false,
   });
 
   @override
@@ -28,7 +32,15 @@ class KpiCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 22)),
+            isDrone
+                ? const DroneIcon(
+                    size: 22,
+                    color: Colors.amber,
+                  )
+                : Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 22),
+                  ),
             const SizedBox(height: 8),
             Text(
               value,

@@ -11,11 +11,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailCtrl = TextEditingController(text: 'admin@kokotosestate.gr');
+  final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
   String? _error;
+
+  // Demo credentials — replace with real backend auth in Phase 4
+  static const _validEmail = 'admin@kokotosestate.gr';
+  static const _validPassword = 'vinecare2026';
 
   @override
   void dispose() {
@@ -26,26 +30,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signIn() async {
     if (_loading) return;
+
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _error = 'Please enter email and password');
+      return;
+    }
+
     setState(() { _loading = true; _error = null; });
 
-    try {
-      final result = await ApiService.login(_emailCtrl.text.trim(), _passCtrl.text);
-      if (!mounted) return;
+    // Simulate a network round-trip so the spinner is visible
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
 
-      if (result['token'] != null) {
-        context.go('/dashboard');
-      } else {
-        setState(() {
-          _error = result['detail']?.toString() ?? 'Invalid credentials';
-        });
-      }
-    } catch (e) {
-      // Dev mode: allow login without backend
+    if (email == _validEmail && password == _validPassword) {
+      await ApiService.setToken('demo-session-token');
       if (!mounted) return;
-      await ApiService.setToken('dev-token-bypass');
-      context.go('/dashboard');
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      context.go('/estates');
+    } else {
+      setState(() {
+        _error = 'Invalid credentials';
+        _loading = false;
+      });
     }
   }
 
